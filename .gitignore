@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[oc]
+*.egg-info
+build/
+dist/
+wheels/
+
+# Virtual environments
+.venv/
+
+# uv
+uv.lock
+
+# Trained models and embeddings
+results/embeddings/*.model
+results/embeddings/*.npy
+
+# Prompt cache (API call results)
+results/prompt_cache/
+
+# HuggingFace cache
+.hf_cache/
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
