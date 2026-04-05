@@ -86,6 +86,24 @@ def run_colbert(groups):
     return {"retrieval": evaluate_retrieval(labels, scores)}
 
 
+def run_ocrn(groups):
+    from src.ocrn_model import run_ocrn
+    labels, scores = run_ocrn(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
+def run_ledn(groups):
+    from src.ledn_model import run_ledn
+    labels, scores = run_ledn(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
+def run_mghm(groups):
+    from src.mghm_model import run_mghm
+    labels, scores = run_mghm(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
 def run_prompt(groups):
     from src.prompt_models import (
         run_prompt_method, LEGAL_COT_SYSTEM, LEGAL_SYLLOGISM_SYSTEM,
@@ -119,6 +137,9 @@ MODEL_RUNNERS = {
     "simcse":      ("SimCSE",         run_simcse),
     "bm25_rerank": ("BM25+Rerank",    run_bm25_rerank),
     "colbert":     ("ColBERT",        run_colbert),
+    "ocrn":        ("OCRN",           run_ocrn),
+    "ledn":        ("LEDN",           run_ledn),
+    "mghm":        ("MGHM",           run_mghm),
     "prompt":      ("Prompt Methods", run_prompt),
 }
 
@@ -137,6 +158,9 @@ TYPE_MAP = {
     "SimCSE": "Contrastive",
     "BM25+Rerank": "Hybrid",
     "ColBERT": "Late Interaction",
+    "OCRN": "Ordinal Contrastive",
+    "LEDN": "Element Decomp.",
+    "MGHM": "Multi-Granularity",
     "Legal-CoT": "Prompt Engineering",
     "Legal-Syllogism": "Prompt Engineering",
 }
@@ -145,6 +169,7 @@ RETRIEVAL_MODEL_ORDER = [
     "BM25", "1D-CNN", "LSTM", "BERT-PLI",
     "BERT (CE)", "LCube (CE)",
     "SBERT (Bi)", "SimCSE", "BM25+Rerank", "ColBERT",
+    "OCRN", "LEDN", "MGHM",
     "Legal-CoT", "Legal-Syllogism",
 ]
 

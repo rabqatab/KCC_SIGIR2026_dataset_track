@@ -79,6 +79,9 @@ uv run python -m src.run_all -m bm25 -o results/bm25_only.json
 | `simcse` | SimCSE | Contrastive Learning |
 | `bm25_rerank` | BM25 + Cross-Encoder | Hybrid |
 | `colbert` | ColBERT | Late Interaction |
+| `ocrn` | OCRN (Ordinal Contrastive Ranking) | Novel |
+| `ledn` | LEDN (Legal Element Decomposition) | Novel |
+| `mghm` | MGHM (Multi-Granularity Hierarchical) | Novel |
 | `prompt` | Legal-CoT, Legal-Syllogism | Prompt Engineering |
 
 ## Output
@@ -100,6 +103,9 @@ src/
   simcse_model.py           SimCSE unsupervised + supervised contrastive learning
   hybrid_model.py           BM25 first-stage + BERT cross-encoder re-ranking
   colbert_model.py          ColBERT late interaction (token-level MaxSim)
+  ocrn_model.py             Ordinal contrastive ranking with graded margins
+  ledn_model.py             Legal element decomposition (fact/law/reasoning)
+  mghm_model.py             Multi-granularity hierarchical matching
   prompt_models.py          Legal-CoT and Legal-Syllogism via LangChain (GPT-4o)
   train_embeddings.py       Word2Vec and FastText training on legal corpus
   run_all.py                Main experiment runner with CLI
