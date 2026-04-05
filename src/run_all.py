@@ -62,6 +62,30 @@ def run_lcube(groups):
     return {"retrieval": evaluate_retrieval(labels, scores)}
 
 
+def run_sbert(groups):
+    from src.sbert_model import run_sbert
+    labels, scores = run_sbert(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
+def run_simcse(groups):
+    from src.simcse_model import run_simcse
+    labels, scores = run_simcse(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
+def run_bm25_rerank(groups):
+    from src.hybrid_model import run_hybrid
+    labels, scores = run_hybrid(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
+def run_colbert(groups):
+    from src.colbert_model import run_colbert
+    labels, scores = run_colbert(groups)
+    return {"retrieval": evaluate_retrieval(labels, scores)}
+
+
 def run_prompt(groups):
     from src.prompt_models import (
         run_prompt_method, LEGAL_COT_SYSTEM, LEGAL_SYLLOGISM_SYSTEM,
@@ -91,6 +115,10 @@ MODEL_RUNNERS = {
     "bert_pli":    ("BERT-PLI",       run_bert_pli),
     "bert_binary": ("finetuned BERT", run_bert_binary),
     "lcube":       ("LCube (CE)",     run_lcube),
+    "sbert":       ("SBERT (Bi)",     run_sbert),
+    "simcse":      ("SimCSE",         run_simcse),
+    "bm25_rerank": ("BM25+Rerank",    run_bm25_rerank),
+    "colbert":     ("ColBERT",        run_colbert),
     "prompt":      ("Prompt Methods", run_prompt),
 }
 
@@ -105,13 +133,19 @@ TYPE_MAP = {
     "BERT-PLI": "Neural Networks",
     "BERT (CE)": "Neural Networks",
     "LCube (CE)": "Neural Networks",
+    "SBERT (Bi)": "Bi-Encoder",
+    "SimCSE": "Contrastive",
+    "BM25+Rerank": "Hybrid",
+    "ColBERT": "Late Interaction",
     "Legal-CoT": "Prompt Engineering",
     "Legal-Syllogism": "Prompt Engineering",
 }
 
 RETRIEVAL_MODEL_ORDER = [
     "BM25", "1D-CNN", "LSTM", "BERT-PLI",
-    "BERT (CE)", "LCube (CE)", "Legal-CoT", "Legal-Syllogism",
+    "BERT (CE)", "LCube (CE)",
+    "SBERT (Bi)", "SimCSE", "BM25+Rerank", "ColBERT",
+    "Legal-CoT", "Legal-Syllogism",
 ]
 
 BINARY_MODEL_ORDER = ["finetuned BERT", "Legal-CoT ZS", "Legal-Syllogism ZS"]

@@ -75,6 +75,10 @@ uv run python -m src.run_all -m bm25 -o results/bm25_only.json
 | `bert_pli` | BERT-PLI | Transformer |
 | `lcube` | LCube (Cross-Encoder) | Transformer |
 | `bert_binary` | Finetuned BERT | Transformer |
+| `sbert` | Sentence-BERT (Bi-Encoder) | Bi-Encoder |
+| `simcse` | SimCSE | Contrastive Learning |
+| `bm25_rerank` | BM25 + Cross-Encoder | Hybrid |
+| `colbert` | ColBERT | Late Interaction |
 | `prompt` | Legal-CoT, Legal-Syllogism | Prompt Engineering |
 
 ## Output
@@ -92,6 +96,10 @@ src/
   neural_models.py          1D-CNN and LSTM with pretrained FastText embeddings
   bert_models.py            BERT Cross-Encoder, BERT-PLI, finetuned BERT binary
   lcube_model.py            LCube cross-encoder (lbox/lcube-base)
+  sbert_model.py            Sentence-BERT bi-encoder with contrastive loss
+  simcse_model.py           SimCSE unsupervised + supervised contrastive learning
+  hybrid_model.py           BM25 first-stage + BERT cross-encoder re-ranking
+  colbert_model.py          ColBERT late interaction (token-level MaxSim)
   prompt_models.py          Legal-CoT and Legal-Syllogism via LangChain (GPT-4o)
   train_embeddings.py       Word2Vec and FastText training on legal corpus
   run_all.py                Main experiment runner with CLI
