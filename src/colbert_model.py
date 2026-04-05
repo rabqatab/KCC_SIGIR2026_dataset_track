@@ -1,7 +1,7 @@
 """ColBERT late interaction model for Korean legal case retrieval.
 
-Implements the ColBERT architecture using KoBERT as the backbone:
-  - Encodes query tokens and candidate tokens independently through KoBERT.
+Implements the ColBERT architecture using KLUE-BERT as the backbone:
+  - Encodes query tokens and candidate tokens independently through KLUE-BERT.
   - Projects each token representation to a lower-dimensional space (128-dim).
   - Scores via MaxSim: for each query token, find the maximum cosine similarity
     with any candidate token, then sum across all query tokens.
@@ -18,14 +18,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 256
 PROJECTION_DIM = 128
 EPOCHS = 5
@@ -66,7 +66,7 @@ class ColBERTPairDataset(Dataset):
 # ---------------------------------------------------------------------------
 
 class ColBERTEncoder(nn.Module):
-    """ColBERT late interaction encoder using KoBERT.
+    """ColBERT late interaction encoder using KLUE-BERT.
 
     Encodes query and candidate sequences independently, projects each
     token to a 128-dimensional representation, and scores via MaxSim.
@@ -231,7 +231,7 @@ def train_colbert(model: ColBERTEncoder, train_loader: DataLoader,
 # Pre-tokenization
 # ---------------------------------------------------------------------------
 
-def pretokenize_all_pairs(groups: list[QueryGroup], tokenizer: BertTokenizer,
+def pretokenize_all_pairs(groups: list[QueryGroup], tokenizer: AutoTokenizer,
                           max_len: int = MAX_LEN) -> list[list[dict]]:
     """Pre-tokenize all query-candidate pairs independently for ColBERT.
 
@@ -294,7 +294,7 @@ def run_colbert(
     5. Reassemble per-query label / score lists.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     all_group_data = pretokenize_all_pairs(groups, tokenizer)
 

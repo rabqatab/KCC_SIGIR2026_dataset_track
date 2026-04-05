@@ -6,7 +6,7 @@ the loss enforces margins proportional to label differences:
     sim(q, label3) > sim(q, label2) > sim(q, label1) > sim(q, label0)
 
 Architecture:
-  - KoBERT bi-encoder with mean pooling + L2 normalization (like SBERT).
+  - KLUE-BERT bi-encoder with mean pooling + L2 normalization (like SBERT).
   - Combined loss = InfoNCE (in-batch negatives) + ordinal margin loss.
   - Scoring via cosine similarity between query and candidate embeddings.
 
@@ -20,14 +20,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 256
 EPOCHS = 5
 BATCH_SIZE = 16
@@ -125,7 +125,7 @@ class OCRNDataset(Dataset):
 class OCRNEncoder(nn.Module):
     """Ordinal Contrastive Ranking Network encoder.
 
-    KoBERT bi-encoder with mean pooling over non-padded token
+    KLUE-BERT bi-encoder with mean pooling over non-padded token
     representations, followed by L2 normalization.  Cosine similarity
     between query and candidate vectors serves as the relevance score.
     """
@@ -348,7 +348,7 @@ def run_ocrn(groups):
         all_scores: list of score lists, one per query group.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_single_texts(groups, tokenizer)
 
     # Flatten pairs with group tracking

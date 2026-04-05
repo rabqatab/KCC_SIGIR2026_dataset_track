@@ -6,14 +6,14 @@ then fuses the signals through a learned linear gate:
   1. **Keyword-level** (noun overlap): Jaccard similarity and weighted
      term-overlap computed from Kiwi-extracted nouns.  Two scalar features
      per pair, computed once with no gradients.
-  2. **Sentence-level** (bi-encoder): KoBERT encodes query and candidate
+  2. **Sentence-level** (bi-encoder): KLUE-BERT encodes query and candidate
      independently with mean pooling; cosine similarity yields one scalar.
-  3. **Document-level** (cross-encoder): KoBERT cross-encoder produces
+  3. **Document-level** (cross-encoder): KLUE-BERT cross-encoder produces
      4-class logits whose expected value is the relevance score; one scalar.
 
 The four features are concatenated and passed through a Linear(4, 1) gate
 that learns which granularity matters most.  The bi-encoder and
-cross-encoder share the same KoBERT backbone but use it differently
+cross-encoder share the same KLUE-BERT backbone but use it differently
 (mean pooling vs. [CLS] classification).
 
 Training minimises MSE on labels plus a pairwise margin-ranking loss.
@@ -28,7 +28,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 from kiwipiepy import Kiwi
 
@@ -38,7 +38,7 @@ from src.metrics import evaluate_retrieval
 _kiwi = Kiwi()
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 256
 NUM_LABELS = 4
 EPOCHS = 5
@@ -201,7 +201,7 @@ class MGHMDataset(Dataset):
 class MGHMNetwork(nn.Module):
     """Multi-Granularity Hierarchical Matching network.
 
-    The bi-encoder and cross-encoder branches share a single KoBERT
+    The bi-encoder and cross-encoder branches share a single KLUE-BERT
     backbone.  Keyword features pass through without gradients.  A
     learned Linear(4, 1) gate fuses the four scalar features into a
     final relevance score.
@@ -437,7 +437,7 @@ def run_mghm(
         all_scores: list of score lists, one per query group.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_mghm_pairs(groups, tokenizer)
 
     # Flatten pairs with group tracking

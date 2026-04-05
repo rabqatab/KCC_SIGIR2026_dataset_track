@@ -1,6 +1,6 @@
 """BERT-based models for Korean legal case similarity.
 
-Implements three approaches using KoBERT (monologg/kobert) as the backbone PLM:
+Implements three approaches using KLUE-BERT (klue/bert-base) as the backbone PLM:
   - BERT Cross-Encoder (CE): 4-class graded relevance via [CLS] classification.
   - BERT-PLI: Paragraph-Level Interaction with BiLSTM aggregation over paragraph-pair [CLS] embeddings, 4-class classification.
   - Finetuned BERT Binary: Binary (similar/dissimilar) classification with class-weighted cross-entropy.
@@ -18,14 +18,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval, evaluate_binary
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert" # if klue-bert for use, use "klue/bert-base", AutoModel and AutoTokenizer
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 512
 PARA_MAX_LEN = 128
 NUM_LABELS = 4  # 4-class classification for graded relevance
@@ -381,7 +381,7 @@ def run_bert_ce(groups):
     Results are reassembled per query group for retrieval metric computation.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_all_pairs(groups, tokenizer)
 
     flat_items = []
@@ -445,7 +445,7 @@ def run_bert_pli(groups):
     and predictions are reassembled per query group.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_pli_pairs(groups, tokenizer)
 
     flat_items = []
@@ -509,7 +509,7 @@ def run_finetuned_bert_binary(groups):
     A fresh BertBinaryClassifier is trained per fold with class-weighted cross-entropy to handle label imbalance.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_all_pairs(groups, tokenizer)
 
     flat_items = []

@@ -1,6 +1,6 @@
 """Sentence-BERT bi-encoder for Korean legal case retrieval.
 
-Encodes query and candidate independently through KoBERT with mean pooling,
+Encodes query and candidate independently through KLUE-BERT with mean pooling,
 normalizes embeddings, and computes cosine similarity as the relevance score.
 Training uses InfoNCE contrastive loss with in-batch negatives.
 
@@ -14,14 +14,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 256
 EPOCHS = 5
 BATCH_SIZE = 16
@@ -97,7 +97,7 @@ class SBERTDataset(Dataset):
 
 
 class SentenceBERT(nn.Module):
-    """Sentence-BERT bi-encoder with mean pooling over KoBERT.
+    """Sentence-BERT bi-encoder with mean pooling over KLUE-BERT.
 
     Encodes a single text into a normalized dense vector.
     Cosine similarity between query and candidate vectors serves as
@@ -237,7 +237,7 @@ def run_sbert(groups):
         all_scores: list of score lists, one per query group.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_single_texts(groups, tokenizer)
 
     # Flatten pairs with group tracking

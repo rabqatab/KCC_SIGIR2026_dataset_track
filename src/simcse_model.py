@@ -1,7 +1,7 @@
 """SimCSE contrastive learning for Korean legal case retrieval.
 
-Implements a two-phase training approach using KoBERT as the backbone:
-  - Phase 1 (unsupervised pre-training): Passes each case note through KoBERT twice
+Implements a two-phase training approach using KLUE-BERT as the backbone:
+  - Phase 1 (unsupervised pre-training): Passes each case note through KLUE-BERT twice
     with different dropout masks to form positive pairs, using in-batch negatives
     with InfoNCE loss. This builds a high-quality sentence embedding space without labels.
   - Phase 2 (supervised fine-tuning): Uses labeled pairs with supervised contrastive
@@ -20,14 +20,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 256
 PRETRAIN_EPOCHS = 3
 FINETUNE_EPOCHS = 5
@@ -86,7 +86,7 @@ class SupervisedPairDataset(Dataset):
 # ---------------------------------------------------------------------------
 
 class SimCSEEncoder(nn.Module):
-    """KoBERT encoder with mean pooling for SimCSE.
+    """KLUE-BERT encoder with mean pooling for SimCSE.
 
     Produces fixed-size sentence embeddings via mean pooling over
     non-padded token representations from the last hidden state.
@@ -143,7 +143,7 @@ def collect_unique_notes(groups: list[QueryGroup]) -> list[str]:
     return notes
 
 
-def tokenize_notes(notes: list[str], tokenizer: BertTokenizer,
+def tokenize_notes(notes: list[str], tokenizer: AutoTokenizer,
                    max_len: int = MAX_LEN) -> list[dict]:
     """Tokenize a list of case note texts into input_ids and attention_mask."""
     encodings: list[dict] = []
@@ -277,7 +277,7 @@ def supervised_finetune(model: SimCSEEncoder, dataloader: DataLoader,
 # Pre-tokenization for supervised pairs
 # ---------------------------------------------------------------------------
 
-def pretokenize_pairs(groups: list[QueryGroup], tokenizer: BertTokenizer,
+def pretokenize_pairs(groups: list[QueryGroup], tokenizer: AutoTokenizer,
                       max_len: int = MAX_LEN) -> list[list[dict]]:
     """Pre-tokenize all query-candidate pairs for supervised fine-tuning.
 
@@ -374,7 +374,7 @@ def run_simcse(
     6. Reassemble per-query label / score lists.
     """
     print("Loading tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     # -- Phase 1: unsupervised pre-training on all unique notes ---------------
     print("\nCollecting unique case notes for unsupervised pre-training...", flush=True)

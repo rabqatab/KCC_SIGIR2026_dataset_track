@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 from rank_bm25 import BM25Okapi
 
@@ -22,7 +22,7 @@ from src.data_loader import QueryGroup, load_dataset
 from src.metrics import evaluate_retrieval
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 512
 NUM_LABELS = 4
 EPOCHS = 5
@@ -224,7 +224,7 @@ def run_hybrid(
 
     # ── 2. Pre-tokenize for BERT ────────────────────────────────────
     print("Loading BERT tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_all_pairs(groups, tokenizer)
 
     # ── 3. Flatten with group-index tracking ────────────────────────

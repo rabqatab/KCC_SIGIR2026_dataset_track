@@ -10,7 +10,7 @@ Architecture
 ------------
 1. Element Decomposition  -- regex-based sentence classification into
    *facts*, *legal provisions*, and *reasoning/conclusion* segments.
-2. Per-element encoding   -- shared KoBERT backbone with [CLS] pooling
+2. Per-element encoding   -- shared KLUE-BERT backbone with [CLS] pooling
    produces three vectors per case (fact_vec, law_vec, reason_vec).
 3. Cross-element cosine similarity -- one similarity score per element type.
 4. Learned fusion         -- a linear layer combines the three cosine
@@ -29,7 +29,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.amp import autocast, GradScaler
-from transformers import BertModel, BertTokenizer
+from transformers import AutoTokenizer, BertModel
 from sklearn.model_selection import StratifiedKFold
 
 from src.data_loader import QueryGroup, load_dataset
@@ -39,7 +39,7 @@ from src.metrics import evaluate_retrieval
 # Hyperparameters
 # ---------------------------------------------------------------------------
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_NAME = "monologg/kobert"
+MODEL_NAME = "klue/bert-base"
 MAX_LEN = 128  # per element (shorter since each text is a segment)
 EPOCHS = 5
 BATCH_SIZE = 8
@@ -119,7 +119,7 @@ def decompose_elements(text: str) -> dict[str, str]:
 
 def pretokenize_all_pairs(
     groups: list[QueryGroup],
-    tokenizer: BertTokenizer,
+    tokenizer: AutoTokenizer,
     max_len: int = MAX_LEN,
 ) -> list[list[dict]]:
     """Pre-tokenize all query-candidate pairs with element decomposition.
@@ -236,7 +236,7 @@ class LEDNDataset(Dataset):
 class LEDNModel(nn.Module):
     """Legal Element Decomposition Network.
 
-    A shared KoBERT encoder produces [CLS] representations for each of the
+    A shared KLUE-BERT encoder produces [CLS] representations for each of the
     three legal elements (facts, legal provisions, reasoning) of both the
     query and candidate case notes.  Per-element cosine similarities are
     combined through a learned linear fusion layer.
@@ -408,8 +408,8 @@ def run_ledn(
     4. Per fold: train a fresh LEDNModel and score held-out pairs.
     5. Reassemble per-query label / score lists after all folds.
     """
-    print("Loading KoBERT tokenizer...", flush=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    print("Loading KLUE-BERT tokenizer...", flush=True)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     all_group_data = pretokenize_all_pairs(groups, tokenizer)
 
     # -- flatten all pairs with group-index tracking --------------------------
