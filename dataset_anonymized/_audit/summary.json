@@ -1,0 +1,12 @@
+{
+  "files_processed": 20,
+  "pairs_processed": 2939,
+  "total_redactions": 22272,
+  "by_category": {
+    "원고": 4842,
+    "변호사": 5495,
+    "피고": 6442,
+    "로펌": 1197,
+    "당사자": 4296
+  }
+}

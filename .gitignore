@@ -28,3 +28,8 @@ results/prompt_cache/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Raw (non-anonymized) dataset and redaction map — contain real names, NEVER commit
+dataset/
+dataset_anonymized/_audit/redactions.json

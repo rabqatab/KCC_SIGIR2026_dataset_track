@@ -14,8 +14,37 @@ uv sync
 
 ## Dataset
 
-Place the KCC JSON files in `dataset/`. Each file corresponds to one query
-case and contains all query-candidate pairs with graded relevance labels (0--3).
+The released benchmark lives in [`dataset_anonymized/`](dataset_anonymized/):
+20 JSON files, one per query case, named `KoCivSCMdataset_<query precedent number>.json`.
+Together they contain 2,939 query–candidate pairs with four-level graded
+relevance labels (label 3: 201, label 2: 172, label 1: 349, label 0: 2,217).
+
+Each file is a JSON object mapping a pair id to a record with 15 fields:
+
+| Field | Description |
+|-------|-------------|
+| `query_caseNumber`, `candidate_caseNumber` | Court case number (e.g. `74다2256`) |
+| `query_caseName`, `candidate_caseName` | Case name (lawsuit objective) |
+| `query_precedentNumber`, `candidate_precedentNumber` | Internal precedent id |
+| `query_precedentAbstract`, `candidate_precedentAbstract` | Headnote / abstract |
+| `query_precedentNote`, `candidate_precedentNote` | Case note (used by the baselines) |
+| `query_precedentText`, `candidate_precedentText` | Full decision text |
+| `query_sentenceDate`, `candidate_sentenceDate` | Decision date |
+| `label` | Graded relevance, 0–3 (see [ANNOTATION_GUIDELINES.md](ANNOTATION_GUIDELINES.md)) |
+
+For binary evaluation, labels {2, 3} map to *similar* and {0, 1} to *dissimilar*.
+
+**Anonymization.** Party, attorney, and law-firm names are replaced with
+role-preserving placeholders (원고1, 피고1, 변호사1, 로펌1, …) — 22,272
+redactions in total, produced by [`scripts/anonymize.py`](scripts/anonymize.py).
+Aggregate audit statistics are in `dataset_anonymized/_audit/summary.json`.
+
+**Annotation guidelines.** The full annotation protocol (relevance criteria,
+annotator qualifications, procedure, reliability statistics, and a worked
+example) is in [ANNOTATION_GUIDELINES.md](ANNOTATION_GUIDELINES.md).
+
+To run the benchmark code below, point it at the released data by placing the
+JSON files in `dataset/` (e.g. `cp dataset_anonymized/*.json dataset/`).
 
 ## Running experiments
 
@@ -91,7 +120,9 @@ Results are printed as formatted tables and saved to `results/all_results.json`.
 ## Project structure
 
 ```
-dataset/                    KCC JSON files (one per query case)
+dataset_anonymized/         Released KCC benchmark (one JSON per query case)
+ANNOTATION_GUIDELINES.md    Annotation protocol and relevance criteria
+scripts/anonymize.py        Anonymization pipeline used to produce the release
 src/
   data_loader.py            Dataset loading and query group construction
   metrics.py                P@K, R@K, nDCG@K, Accuracy, F1
@@ -110,4 +141,22 @@ src/
   train_embeddings.py       Word2Vec and FastText training on legal corpus
   run_all.py                Main experiment runner with CLI
 results/                    Output directory for results and trained models
+```
+
+## License
+
+- **Dataset** (`dataset_anonymized/`): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- **Code**: [MIT](LICENSE)
+
+## Citation
+
+```bibtex
+@inproceedings{cho2026kcc,
+  title     = {{KCC}: Korean Civil Case Dataset for Legal Information Retrieval},
+  author    = {Cho, Minhan and Park, Soyoung and Sundar, S. Shyam and Choi, Daejin and Han, Jinyoung},
+  booktitle = {Proceedings of the 49th International ACM SIGIR Conference on
+               Research and Development in Information Retrieval (SIGIR '26)},
+  year      = {2026},
+  doi       = {10.1145/3805712.3808594}
+}
 ```
